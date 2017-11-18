@@ -1,0 +1,297 @@
+#include<stdio.h>
+#include<stdlib.h>
+#include<iostream>
+#define MAXSIZE 100 
+#define ERROR 0
+#define OK 1
+using namespace std;
+
+typedef struct            //顺序栈的定义 
+{
+	int *base;            //栈底指针 
+	int *top;             //栈顶指针 
+	int stacksize;        //栈可用的最大容量 
+}SqStack;
+
+typedef struct StackNode      //链栈的定义 
+{
+	int data;
+	struct StackNode *next;
+} StackNode,*LinkStack;
+
+void ShowScreem()
+{
+	puts("1)用堆栈实现10进制转换为2进制的功能。\n");
+	puts("2)用堆栈实现表达式求值。其中表达式从屏幕输入，表达式包括数字、加减乘除运算符以及括号。\n");
+	puts("3)结束\n");
+}
+
+void SInitStack(SqStack &S)                 //构造一个空栈 ，初始化 
+{
+	S.base=new int[MAXSIZE];           //为顺序栈动态分配一个最大容量为 MAXSIZE的数组空间 
+	if(!S.base)
+	printf("内存分配失败！\n");                          //储存分配失败 
+	S.top=S.base;                            //top初始为base，空栈 
+	S.stacksize=MAXSIZE;                     //stacksize置为栈的最大容量  MAXSIZE
+}
+
+int SPush(SqStack &S,int e)          //插入元素e为新的栈顶元素    入栈 
+{
+	if(S.top-S.base==S.stacksize)
+	{
+		printf("堆栈已满，无法插入！\n");       //栈满
+		return 0; 
+	}        
+	*S.top++=e;                              //元素e压入栈顶，栈顶指针加1 
+} 
+
+int SPop(SqStack &S,int *e)          //删除S的栈顶元素，用e返回其值    出栈 
+{
+
+	if(S.top==S.base)
+	{
+		printf("堆栈已空，无数据元素出栈！\n");
+		return 0;                   //栈空 
+	}                        
+	*e=*--S.top;                              //栈顶指针减1，将栈顶元素赋给e
+}
+
+int SPop1(SqStack &S,char &e)          //删除S的栈顶元素，用e返回其值    出栈 
+{
+
+	if(S.top==S.base)                   //栈空 
+	{
+		printf("栈空！\n");
+		return 0;  		
+	}
+                          
+	e=*--S.top;                              //栈顶指针减1，将栈顶元素赋给e 
+}
+
+int SGetTop(SqStack &S)                  //返回S的栈顶元素，不修改栈顶指针    取栈顶元素 
+{
+	if(S.top!=S.base)                        //非空栈
+	return *(S.top-1);                       //返回栈顶元素的值，栈顶指针不变 
+} 
+
+void Sclear(SqStack &S)                    //清空
+{
+	if(S.base)
+	free(S.base);
+	S.top=0;
+	S.stacksize=0;
+} 
+
+bool Sempty(SqStack &S)                     //判断是否为空 
+{
+	if(S.base==S.top)
+	return true;
+	else
+	return false;
+} 
+
+ //链栈
+  
+int LInitStack(LinkStack &S)              //构造一个空栈 ，栈顶指针置空    初始化 
+{
+	S=NULL;
+	return OK; 
+} 
+
+int LPush(LinkStack &S,int e)       //在栈顶插入元素e       入栈 
+{
+	LinkStack p;
+	p=new StackNode;                         //生成新结点 
+	p->data=e;                               //将新结点数据域置为e 
+	p->next=S;                               //将新结点插入栈顶 
+	S=p;                                     //修改栈顶指针为p 
+	return OK;
+} 
+
+int LPop(LinkStack &S,int &e)       //删除S的栈顶元素，用e返回其值    出栈 
+{
+	LinkStack p;
+	if(S==NULL)                      //空栈
+	{
+		printf("堆栈已空！\n");
+		return  ERROR;   
+	}        
+    e=S->data;                               //将栈顶元素赋给e
+	p=S;                                     //用p临时保存栈顶元素空间，以备释放 
+	S=S->next;                               //修改栈顶指针
+	delete p;                                //释放原栈顶元素的空间
+	return OK; 
+} 
+
+int LGetTop(LinkStack &S)               //返回s的栈顶元素，不修改栈顶指针 
+{ 
+	if(S!=NULL)                              //非空栈
+	return S->data;                          //返回栈顶元素的值 ，栈顶指针不变 
+}
+
+void Lclear(LinkStack &S)                //清空栈
+{
+	LinkStack p,q;
+	q=S->next;
+	while(q)
+	{
+		p=q->next;
+		p->next=q->next;
+		free(p);
+		q=q->next;
+	}
+} 
+
+bool Lempty(LinkStack S)                    //判断是否为空
+{
+	if(S==NULL)
+	return true;
+	else
+	return false;
+} 
+
+int StackEmpty(SqStack &S)               //判断栈是否为空；若为空，则返回0，否则返回1
+{
+	if(S.top==S.base)
+	return 0;
+	else return 1;
+} 
+
+int In(char ch)
+{
+	if((ch-'0'>=0) && (ch-'0'<=9)) return 1;
+	else return 0;
+}
+
+int Operate(char a,char theta, char b)                 //二元运算 
+{
+    switch(theta)
+    {
+    case '+':
+        return a+b;
+    case '-':
+        return a-b;
+    case '*':
+        return a*b;
+    case '/':
+        return a/b;
+    default :
+        return 0;
+    }
+}
+
+char OPSET[7]= {'+','-','*','/','(',')','#'};         //运算符优先级 
+unsigned char Prior[7][7] =
+{
+    '>','>','<','<','<','>','>',
+    '>','>','<','<','<','>','>',
+    '>','>','>','>','<','>','>',
+    '>','>','>','>','<','>','>',
+    '<','<','<','<','<','=',' ',
+    '>','>','>','>',' ','>','>',
+    '<','<','<','<','<',' ','='
+};
+
+char Precede(char a, char b)
+{
+	int i,j;
+	for(i=0;i<7;i++)
+	{
+	    if(a==OPSET[i])
+		break;	
+	}
+	for(j=0;j<7;j++)
+	{
+	    if(b==OPSET[j])
+		break;
+	}
+	return Prior[i][j];
+}
+
+int EvaluateExpression()
+{
+	SqStack OPND,OPTR;
+	char ch,theta,x,a,b;
+	SInitStack(OPND);                     //opnd,操作数栈
+	SInitStack(OPTR);                     //optr,运算符栈
+	SPush(OPTR,'#');                      //将表达式起始符#压入OPTR栈 
+    cin>>ch;
+	while(ch!='#' || SGetTop(OPTR)!='#')     //表达式没有扫描完毕或OPTR的栈顶元素不为# 
+	{
+		if(In(ch) == 1)                      //ch不是运算符则进OPND栈 
+		{
+			ch=(int)ch-'0';
+			SPush(OPND,ch);
+			scanf("%c",&ch);
+		}
+		else
+		switch(Precede(SGetTop(OPTR),ch))     //比较OPTR的栈顶元素和ch的优先级 
+		{
+			case '<':
+				SPush(OPTR,ch);               //当前字符ch压入OPTR栈，读入下一个字符ch 
+				cin>>ch;
+				break;
+			case '>':
+				SPop1(OPTR,theta);                   //弹出OPTR栈顶的运算符 
+				SPop1(OPND,b);SPop1(OPND,a);         //弹出OPND栈顶的两个元素 
+				SPush(OPND,Operate(a,theta,b));      //将运算符结果压入OPND栈 
+				break;
+			case '=':                                //OPTR的栈顶元素是（且ch是） 
+				SPop1(OPTR,x);                       //弹出OPRT栈顶的（，读入下一字符ch 
+				cin>>ch;
+				break;
+		}
+	}
+	return SGetTop(OPND);                             //OPND栈顶元素即为表达式求值结果 
+}
+
+void func1()
+{
+	int i,e;
+	SqStack S;                       //定义一个名为S的栈
+	SInitStack(S);
+	printf("请输入将要转化的十进制数：\n");
+	scanf("%d",&i);
+	while(i)                           //判断i是否为0，若为0则退出循环 ，否则执行将十进制转换为二进制的栈
+	{
+		SPush(S,i%2);
+		i=i/2;
+	} 
+	printf("转化为二进制为：\n");
+	while(StackEmpty(S))              //判断堆栈是否为空，若为空则终止，否则循环输出
+	{
+		SPop(S,&e);
+		printf("%d",e);
+	} 
+	printf("\n");
+}
+
+void func2()
+{
+	double result;
+	printf("请输入表达式,以#结束：\n");
+	result=EvaluateExpression();
+	printf("结果为：%.3lf\n",result);
+}
+
+int main() 
+{
+	ShowScreem();
+	printf("请选择所需服务：\n");
+	int m;
+	do{
+		scanf("%d",&m);
+		switch(m){
+			case 1:
+				func1();
+				break;
+			case 2:
+				func2();
+				break;
+			default:
+				break;
+		}
+	}while(m != 3);
+	return 0;	
+}
+
